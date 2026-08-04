@@ -1,0 +1,18 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Button from "../components/Button.astro";
+
+---
+
+<BaseLayout pageTitle="Welcome">
+	<header>
+		<h1>Pocket Notes</h1>
+		<p>Small Notes. Anywhere you go.</p>
+	</header>
+
+	<main>
+		<Button href="/signup" label="Sign up"/>
+		<Button href="/login" label="Log in" />
+	</main>
+</BaseLayout>
+

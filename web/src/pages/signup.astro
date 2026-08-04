@@ -1,0 +1,17 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout pageTitle="Sign up">
+    <h1>Create Your account</h1>
+    <form action="/api/sigup" method="POST">
+        <label>Email
+            <input type="email" name="email" required />
+        </label>
+        <label>
+            Password
+            <input type="password" name="password" required minlength="8" />
+        </label>
+        <button type="submit">Sign up</button>
+    </form>
+</BaseLayout>

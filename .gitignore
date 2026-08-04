@@ -3,5 +3,5 @@ node_modules/
 .wrangler/
 dist/
 
-Claude.md
-Agents.md
+CLAUDE.md
+AGENTS.md
