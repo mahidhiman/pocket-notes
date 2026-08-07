@@ -1,6 +1,8 @@
 import {Hono} from 'hono';
 import {logger} from 'hono/logger';
-import {actions, middleware, pages} from 'astro/hono';
+import {
+    trailingSlash, redirects, sessions, actions, middleware, pages, i18n, cache
+} from 'astro/hono';
 
 const app = new Hono();
 
@@ -25,6 +27,11 @@ app.post('/api/signup', async (c) => {
 });
 
 //Astro's page rendring - must come last as the fallback. 
+app.use(trailingSlash());
+app.use(redirects());
+app.use(sessions());
+app.use(i18n());
+app.use(cache());
 app.use(pages());
 
 export default app;
