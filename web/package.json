@@ -15,6 +15,7 @@
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.7",
     "astro": "^7.1.6",
+    "hono": "^4.13.1",
     "wrangler": "^4.118.0"
   }
 }
