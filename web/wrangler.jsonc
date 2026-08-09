@@ -11,4 +11,11 @@
   "observability": {
     "enabled": true,
   },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "pocket-notes-db",
+      "database_id": "7496f704-e402-4569-9a94-5712f26f1280",
+    },
+  ],
 }

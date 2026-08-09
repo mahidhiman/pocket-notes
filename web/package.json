@@ -15,7 +15,11 @@
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.7",
     "astro": "^7.1.6",
+    "drizzle-orm": "^0.45.2",
     "hono": "^4.13.1",
     "wrangler": "^4.118.0"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.10"
   }
 }
