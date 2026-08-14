@@ -1,5 +1,6 @@
 import {Hono} from 'hono';
 import {drizzle} from 'drizzle-orm/d1';
+import {eq} from 'drizzle-orm';
 import {env} from 'cloudflare:workers';
 import {notes} from './db/schema';
 import {logger} from 'hono/logger';
@@ -9,9 +10,17 @@ import {
 } from 'astro/hono';
 
 
-const app = new Hono();
+const app = new Hono<{
+    Variables: {auth: ReturnType<typeof createAuth>}
+}>();
 
 app.use(logger());
+
+//Build the auth object once per request, not once per route.
+app.use('*', async (c, next) => {
+    c.set('auth', createAuth());
+    await next();
+});
 
 //Astro's Own request pipeline, mounted as Hono middleware. 
 app.use(actions());
@@ -22,8 +31,7 @@ app.get('/api/hello', c => c.json({message: "Hello from Hono!"}));
 
 //New Database related routes
 app.post('/api/notes', async c => {
-    const auth = createAuth();
-    const session = await auth.api.getSession({
+    const session = await c.get('auth').api.getSession({
         headers: c.req.raw.headers
     })
 
@@ -45,9 +53,18 @@ app.post('/api/notes', async c => {
 });
 
 app.get('/api/notes', async c => {
+    const session = await c.get('auth').api.getSession({
+        headers: c.req.raw.headers
+    })
+
+    if(!session){
+        return c.json({error: 'Please login again'}, 401);
+    }
+
     const db = drizzle(env.DB);
-    const allNotes = await db.select().from(notes).all();
-    return c.json(allNotes, 200);
+    const myNotes = await db.select().from(notes)
+        .where(eq(notes.userId, session.user.id)).all();
+    return c.json(myNotes, 200);
 });
 
 app.get('/api/health', async c => {
@@ -56,8 +73,7 @@ app.get('/api/health', async c => {
 
 //Auth Routes
 app.on(["GET", "POST"], "/api/auth/**", async (c) => {
-    const auth = createAuth();
-    return auth.handler(c.req.raw);
+    return c.get('auth').handler(c.req.raw);
 });
 
 

@@ -15,6 +15,13 @@
       "when": 1786696486948,
       "tag": "0001_blue_harpoon",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1786744258313,
+      "tag": "0002_omniscient_makkari",
+      "breakpoints": true
     }
   ]
 }

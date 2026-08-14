@@ -5,6 +5,9 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 <BaseLayout pageTitle="Sign up">
     <h1>Create Your account</h1>
     <form id="signup-form">
+        <label>Name
+            <input type="text" name="name" required />
+        </label>
         <label>Email
             <input type="email" name="email" required />
         </label>
@@ -16,12 +19,13 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     </form>
 
     <script>
-        const form = document.getElementById("sigup-form") as HTMLFormElement;
+        const form = document.getElementById("signup-form") as HTMLFormElement;
         form.addEventListener("submit", async e => {
             e.preventDefault();
             const data = new FormData(form);
-            const res = await fetch("/api/signup/email", {method: "POST", headers: {'Content-Type': 'application/json'}, body: JSON.stringify({
+            const res = await fetch("/api/auth/sign-up/email", {method: "POST", headers: {'Content-Type': 'application/json'}, body: JSON.stringify({
                 email: data.get('email'),
+                name: data.get('name'),
                 password: data.get('password'),
             }),
         });
