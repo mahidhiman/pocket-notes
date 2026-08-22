@@ -26,3 +26,7 @@ pnpm-debug.log*
 #AI agents
 CLAUDE.md
 AGENTS.md
+
+# wrangler local secrets
+.dev.vars
+.dev.vars.*

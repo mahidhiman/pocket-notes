@@ -4,7 +4,9 @@ export const notes = sqliteTable("notes", {
     id: text('id').primaryKey(),
     userId: text('user_id').notNull(),
     body: text('body').notNull(),
+    attachmentKey: text('attachment_key'),
     createdAt: integer('created_at').notNull(),
+    updatedAt: integer('updated_at'),
 });
 
 export const user = sqliteTable('user', {

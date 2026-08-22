@@ -1,0 +1,186 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import {createAuth} from "../auth";
+import {drizzle} from "drizzle-orm/d1";
+import {and, desc, eq} from "drizzle-orm";
+import {env} from "cloudflare:workers";
+import {notes} from "../db/schema";
+
+const session = await createAuth().api.getSession({headers: Astro.request.headers});
+if(!session){
+    return Astro.redirect("/login");
+}
+
+const db = drizzle(env.DB);
+const myNotes = await db.select().from(notes)
+    .where(eq(notes.userId, session.user.id))
+    .orderBy(desc(notes.createdAt)).all();
+
+const selectedId = Astro.url.searchParams.get("note");
+const selected = selectedId
+    ? await db.select().from(notes)
+        .where(and(eq(notes.id, selectedId), eq(notes.userId, session.user.id))).get()
+    : null;
+
+function preview(body: string) {
+    const firstLine = body.split("\n")[0].trim();
+    return firstLine.length > 40 ? firstLine.slice(0, 40) + "…" : firstLine || "Untitled";
+}
+---
+
+<BaseLayout pageTitle="My Notes">
+    <div class="grid gap-6 md:grid-cols-[16rem_1fr]">
+        <aside class="space-y-3">
+            <a
+                href="/notes"
+                class="block rounded-md bg-stone-900 px-3 py-2 text-center text-sm text-white hover:bg-stone-700"
+            >New note</a>
+
+            {myNotes.length === 0 && (
+                <p class="text-sm text-stone-500">No notes yet. Write your first one.</p>
+            )}
+
+            <ul class="space-y-1">
+                {myNotes.map(note => (
+                    <li>
+                        <a
+                            href={`?note=${note.id}`}
+                            class:list={[
+                                "block truncate rounded-md px-3 py-2 text-sm",
+                                note.id === selectedId
+                                    ? "bg-stone-200 font-medium"
+                                    : "hover:bg-stone-100",
+                            ]}
+                        >
+                            {preview(note.body)}
+                            {note.attachmentKey && <span class="ml-1 text-stone-400">📎</span>}
+                        </a>
+                    </li>
+                ))}
+            </ul>
+        </aside>
+
+        <main class="rounded-lg border border-stone-200 bg-white p-5">
+            <h1 class="mb-4 text-lg font-semibold">
+                {selected ? "Edit note" : "New note"}
+            </h1>
+
+            <form id="note-form" data-note-id={selected?.id ?? ""} class="space-y-4">
+                <textarea
+                    name="text"
+                    required
+                    rows="12"
+                    placeholder="Write something…"
+                    class="w-full resize-y rounded-md border border-stone-300 p-3 font-mono text-sm focus:border-stone-500 focus:outline-none"
+                >{selected?.body ?? ""}</textarea>
+
+                <div class="flex flex-wrap items-center gap-3">
+                    <button
+                        type="submit"
+                        class="rounded-md bg-stone-900 px-4 py-2 text-sm text-white hover:bg-stone-700"
+                    >Save</button>
+
+                    {selected && (
+                        <button
+                            type="button"
+                            id="delete"
+                            class="rounded-md border border-red-300 px-4 py-2 text-sm text-red-700 hover:bg-red-50"
+                        >Delete</button>
+                    )}
+
+                    <label class="ml-auto text-sm text-stone-600">
+                        <span class="mr-2">Attachment</span>
+                        <input type="file" id="attachment" class="text-sm" />
+                    </label>
+                </div>
+
+                <p id="status" class="text-sm text-stone-500"></p>
+
+                {selected?.attachmentKey && (
+                    <p class="text-sm">
+                        <a
+                            href={`/api/uploads/${selected.attachmentKey}`}
+                            target="_blank"
+                            class="text-stone-700 underline hover:text-stone-900"
+                        >Open attachment</a>
+                    </p>
+                )}
+            </form>
+        </main>
+    </div>
+
+    <script>
+        const form = document.getElementById("note-form") as HTMLFormElement;
+        const status = document.getElementById("status") as HTMLParagraphElement;
+        const attachment = document.getElementById("attachment") as HTMLInputElement;
+        const noteId = form.dataset.noteId;
+
+        //Set by the upload handler, sent along with the next save.
+        let pendingKey: string | null = null;
+
+        function say(message: string) {
+            status.textContent = message;
+        }
+
+        attachment.addEventListener("change", async () => {
+            const file = attachment.files?.[0];
+            if(!file) return;
+
+            say("Uploading…");
+            const res = await fetch(`/api/uploads?filename=${encodeURIComponent(file.name)}`, {
+                method: "POST",
+                headers: {'Content-Type': file.type || 'application/octet-stream'},
+                body: file,
+            });
+            if(!res.ok){
+                const problem = await res.json().catch(() => ({}));
+                say(problem.error ?? "Upload failed.");
+                return;
+            }
+
+            const {key} = await res.json();
+            pendingKey = key;
+            say("File ready. Save the note to attach it.");
+        });
+
+        form.addEventListener("submit", async e => {
+            e.preventDefault();
+            const text = new FormData(form).get("text");
+            const payload: Record<string, unknown> = {text};
+            if(pendingKey) payload.attachmentKey = pendingKey;
+
+            say("Saving…");
+            const res = noteId
+                ? await fetch(`/api/notes/${noteId}`, {
+                    method: "PATCH",
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload),
+                })
+                : await fetch("/api/notes", {
+                    method: "POST",
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload),
+                });
+
+            if(!res.ok){
+                say("Save failed.");
+                return;
+            }
+
+            const note = await res.json();
+            //Reload so the sidebar and the attachment link match the database.
+            window.location.href = `/notes?note=${note.id}`;
+        });
+
+        document.getElementById("delete")?.addEventListener("click", async () => {
+            if(!confirm("Delete this note?")) return;
+
+            const res = await fetch(`/api/notes/${noteId}`, {method: "DELETE"});
+            if(!res.ok){
+                say("Delete failed.");
+                return;
+            }
+            window.location.href = "/notes";
+        });
+    </script>
+</BaseLayout>

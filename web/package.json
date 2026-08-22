@@ -10,14 +10,17 @@
     "build": "astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "generate-types": "wrangler types"
+    "generate-types": "wrangler types",
+    "test": "node test-ownership.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^14.1.7",
+    "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.1.6",
     "better-auth": "^1.6.26",
     "drizzle-orm": "^0.45.2",
     "hono": "^4.13.1",
+    "tailwindcss": "^4.3.3",
     "wrangler": "^4.118.0"
   },
   "devDependencies": {

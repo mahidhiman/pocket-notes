@@ -1,5 +1,9 @@
 ---
-const {href, label} = Astro.props;
+const {href, label, variant = "primary"} = Astro.props;
+
+const styles = variant === "primary"
+    ? "bg-stone-900 text-white hover:bg-stone-700"
+    : "border border-stone-300 text-stone-800 hover:bg-stone-100";
 ---
 
-<a class="button" href={href}>{label}</a>
+<a class:list={["inline-block rounded-md px-4 py-2 text-sm font-medium", styles]} href={href}>{label}</a>

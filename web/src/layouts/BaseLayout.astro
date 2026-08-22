@@ -1,22 +1,67 @@
 ---
+import "../styles/global.css";
+import {createAuth} from "../auth";
+
 const {pageTitle} = Astro.props;
+
+//Resolved here so every page gets the right nav without asking for it.
+const session = await createAuth().api.getSession({headers: Astro.request.headers});
+const user = session?.user ?? null;
 ---
 
-<html lang="en">
+<html lang="en" class="h-full">
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width" />
         <title>{pageTitle} · Pocket Notes</title>
     </head>
-    <body>
-        <nav>
-            <a href="/">Pocket Notes</a>
+    <body class="flex h-full min-h-screen flex-col bg-stone-50 text-stone-900">
+        <nav class="border-b border-stone-200 bg-white">
+            <div class="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+                <a class="font-semibold tracking-tight" href="/">Pocket Notes</a>
+                <div class="flex items-center gap-4 text-sm">
+                    {user ? (
+                        <>
+                            <a class="text-stone-600 hover:text-stone-900" href="/notes">My notes</a>
+                            <span class="hidden text-stone-400 sm:inline">{user.email}</span>
+                            <button
+                                id="logout"
+                                class="rounded-md border border-stone-300 px-3 py-1.5 hover:bg-stone-100"
+                            >Log out</button>
+                        </>
+                    ) : (
+                        <>
+                            <a class="text-stone-600 hover:text-stone-900" href="/login">Log in</a>
+                            <a
+                                class="rounded-md bg-stone-900 px-3 py-1.5 text-white hover:bg-stone-700"
+                                href="/signup"
+                            >Sign up</a>
+                        </>
+                    )}
+                </div>
+            </div>
         </nav>
 
-        <slot />
+        <div class="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+            <slot />
+        </div>
 
-        <footer>
+        <footer class="border-t border-stone-200 py-4 text-center text-sm text-stone-500">
             <p>&copy; 2026 Pocket Notes</p>
         </footer>
+
+        <script>
+            document.getElementById("logout")?.addEventListener("click", async () => {
+                //better-auth wants both the header and a JSON body here.
+                //Without them it answers 415 or 400, and the session
+                //cookie quietly survives.
+                await fetch("/api/auth/sign-out", {
+                    method: "POST",
+                    headers: {'Content-Type': 'application/json'},
+                    body: "{}",
+                });
+                window.location.href = "/";
+            });
+        </script>
     </body>
 </html>

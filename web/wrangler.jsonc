@@ -18,4 +18,10 @@
       "database_id": "7496f704-e402-4569-9a94-5712f26f1280",
     },
   ],
+  "r2_buckets": [
+    {
+      "bucket_name": "pocket-notes-uploads",
+      "binding": "UPLOADS",
+    },
+  ],
 }

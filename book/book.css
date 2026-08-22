@@ -1,0 +1,190 @@
+/* Build Your Own SaaS - book design.
+ * Every value here is a choice explained in the appendix.
+ * Pair with the manuscript converted to HTML, e.g.:
+ *   pandoc "Build Your Own SaaS - Complete Manuscript.md" \
+ *     -s -c book/book.css -o book.html
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap');
+
+:root {
+    --ink: #1c1917;
+    --ink-soft: #57534e;
+    --rule: #e7e5e4;
+    --paper: #fffdfa;
+    --callout: #f5f5f4;
+    --accent: #78350f;
+
+    /* 45-75 characters is the comfortable range. `ch` is the width of a
+     * zero, which in a proportional face is wider than the average
+     * lowercase letter, so 60ch lands around 68 real characters. */
+    --measure: 60ch;
+    --leading: 1.55;          /* WCAG asks for at least 1.5 within a paragraph */
+    --body-size: 1.125rem;
+}
+
+html {
+    background: var(--paper);
+}
+
+body {
+    font-family: Lexend, "Segoe UI", system-ui, sans-serif;
+    font-size: var(--body-size);
+    line-height: var(--leading);
+    color: var(--ink);
+    background: var(--paper);
+
+    /* Never justified. Justified text opens uneven word gaps,
+     * and those gaps form vertical rivers down the page. */
+    text-align: left;
+
+    max-width: var(--measure);
+    margin: 0 auto;
+    padding: 3rem 1.5rem 6rem;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Headings ---------------------------------------------------------- */
+
+h1, h2, h3, h4 {
+    font-weight: 600;
+    line-height: 1.25;
+    text-wrap: balance;
+    margin: 2.5em 0 0.6em;
+}
+
+h1 {                                  /* chapter opener */
+    font-size: 2rem;
+    margin-top: 0;
+    padding-top: 2rem;
+    border-top: 2px solid var(--ink);
+    break-before: page;
+}
+
+body > h1:first-of-type { break-before: auto; }
+
+h2 { font-size: 1.4rem; }
+h3 { font-size: 1.15rem; color: var(--ink-soft); }
+
+p { margin: 0 0 1.1em; }
+
+a { color: var(--accent); }
+
+strong { font-weight: 600; }
+
+hr {
+    border: 0;
+    border-top: 1px solid var(--rule);
+    margin: 3rem 0;
+}
+
+/* Lists and tables -------------------------------------------------- */
+
+ul, ol { margin: 0 0 1.2em; padding-left: 1.4em; }
+li { margin-bottom: 0.35em; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5em 0;
+    font-size: 0.94em;
+    line-height: 1.45;
+}
+
+th, td {
+    text-align: left;
+    padding: 0.45em 0.7em;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+}
+
+th { font-weight: 600; }
+
+/* Code -------------------------------------------------------------- */
+
+/* JetBrains Mono keeps 0/O and 1/l/I visually distinct. In prose a
+ * mix-up is a typo; in code it breaks the program. */
+code, pre, kbd {
+    font-family: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+    font-variant-ligatures: none;
+}
+
+code {
+    font-size: 0.88em;
+    background: var(--callout);
+    padding: 0.1em 0.32em;
+    border-radius: 3px;
+}
+
+pre {
+    background: var(--callout);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 0.9rem 1rem;
+    margin: 1.4em 0;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    tab-size: 4;
+}
+
+pre code {
+    background: none;
+    padding: 0;
+    font-size: inherit;
+}
+
+/* Callout boxes ----------------------------------------------------- */
+
+/* Sidebars, not main teaching text. Smaller and tighter on purpose,
+ * the way a caption reads differently from a paragraph. */
+blockquote {
+    margin: 1.6em 0;
+    padding: 0.85rem 1.1rem;
+    border-left: 3px solid var(--accent);
+    background: var(--callout);
+    border-radius: 0 6px 6px 0;
+
+    font-size: 0.92rem;
+    line-height: 1.42;
+    color: var(--ink-soft);
+    break-inside: avoid;
+}
+
+blockquote p { margin-bottom: 0.6em; }
+blockquote p:last-child { margin-bottom: 0; }
+
+blockquote strong:first-child {
+    display: block;
+    font-size: 0.75rem;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.35em;
+}
+
+blockquote pre {
+    font-size: 0.76rem;
+    margin: 0.7em 0;
+}
+
+/* Print ------------------------------------------------------------- */
+
+@page {
+    size: 6in 9in;            /* trim size chosen to land in the 45-75ch range */
+    margin: 0.75in 0.7in;
+}
+
+@media print {
+    body {
+        max-width: none;
+        padding: 0;
+        font-size: 10.5pt;
+        background: #fff;
+    }
+
+    pre, blockquote, table { break-inside: avoid; }
+    h1, h2, h3 { break-after: avoid; }
+
+    a { color: inherit; text-decoration: none; }
+}

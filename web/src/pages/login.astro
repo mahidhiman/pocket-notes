@@ -3,33 +3,46 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout pageTitle="Log In">
-    <h1>Login to your account</h1>
-    <form id="login-form">
-        <label>
-            Email
-            <input type="email" name="email" required />
-        </label>
-        <label>
-            Password
-            <input type="password" name="password" required/>
-        </label>
-        <button type="submit">Log in</button>
-    </form>
+    <div class="mx-auto max-w-sm rounded-lg border border-stone-200 bg-white p-6">
+        <h1 class="mb-4 text-xl font-semibold">Log in to your account</h1>
+        <form id="login-form" class="space-y-4">
+            <label class="block text-sm">
+                <span class="mb-1 block text-stone-600">Email</span>
+                <input type="email" name="email" required
+                    class="w-full rounded-md border border-stone-300 px-3 py-2 focus:border-stone-500 focus:outline-none" />
+            </label>
+            <label class="block text-sm">
+                <span class="mb-1 block text-stone-600">Password</span>
+                <input type="password" name="password" required
+                    class="w-full rounded-md border border-stone-300 px-3 py-2 focus:border-stone-500 focus:outline-none" />
+            </label>
+            <button type="submit"
+                class="w-full rounded-md bg-stone-900 px-4 py-2 text-sm text-white hover:bg-stone-700">Log in</button>
+            <p id="error" class="text-sm text-red-600"></p>
+        </form>
+        <p class="mt-4 text-sm text-stone-600">
+            No account yet? <a href="/signup" class="underline">Sign up</a>.
+        </p>
+    </div>
 
     <script>
         const form = document.getElementById("login-form") as HTMLFormElement;
+        const error = document.getElementById("error") as HTMLParagraphElement;
         form.addEventListener("submit", async e => {
             e.preventDefault();
             const data = new FormData(form);
-            const res = await fetch("/api/auth/sign-in/email", {method: "POST", headers: {'Content-Type': 'application/json'}, body: JSON.stringify({
-                email: data.get('email'),
-                password: data.get('password'),
-            }),
-        });
+            const res = await fetch("/api/auth/sign-in/email", {
+                method: "POST",
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    email: data.get('email'),
+                    password: data.get('password'),
+                }),
+            });
             if(res.ok){
-                window.location.href = "/";
+                window.location.href = "/notes";
             } else{
-                alert("Wrong email or password.");
+                error.textContent = "Wrong email or password.";
             }
         });
     </script>
